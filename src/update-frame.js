@@ -1,6 +1,6 @@
 const replacements = { '￿': /[￿]/, '_': /[￿ ]/, ' ': /[_]/ };
 
-export default function (frame, depth, x, z, y, lines) {
+export function updateFrame (frame, depth, x, z, y, lines) {
 	const inverted = /^￿*$/.test(lines[0]);
 	const start = depth + x * 4 - z - 1;
 

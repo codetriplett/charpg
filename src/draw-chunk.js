@@ -1,8 +1,8 @@
-import prepareMask from './prepare-mask';
-import drawBlock from './draw-block';
-import updateFrame from './update-frame';
+import { prepareMask } from './prepare-mask.js';
+import { drawBlock } from './draw-block.js';
+import { updateFrame } from './update-frame.js';
 
-export default function (chunk) {
+export function drawChunk (chunk) {
 	const { length } = chunk;
 	const mask = prepareMask(length);
 	const frame = Array(mask.length).fill(mask[0]);

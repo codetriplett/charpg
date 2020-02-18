@@ -1,4 +1,4 @@
-export default function (chunk, mask, yPercent, xPercent) {
+export function selectBlock (chunk, mask, yPercent, xPercent) {
 	const lineIndex = Math.floor(mask.length * yPercent);
 	const characterIndex = Math.floor(mask[0].length * xPercent);
 	const charCode = mask[lineIndex][characterIndex].charCodeAt(0);

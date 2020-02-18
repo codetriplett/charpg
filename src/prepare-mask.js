@@ -1,4 +1,4 @@
-export default function (length) {
+export function prepareMask (length) {
 	const mask = [];
 
 	for (let i = 0; i < length * 2; i++) {
@@ -27,6 +27,9 @@ export default function (length) {
 		mask.unshift(`${prefix}${content}${suffix}`);
 	}
 
-	mask.unshift(Array(mask[0].length + 1).join('￿'));
+	if (mask.length) {
+		mask.unshift(Array(mask[0].length + 1).join('￿'));
+	}
+	
 	return mask;
 }

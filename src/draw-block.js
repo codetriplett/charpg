@@ -7,7 +7,7 @@ const patterns = {
 	o: [' o    O O', '  O o   o']
 };
 
-export default function (block, asBefore, asBehind, asBelow, isAlternate = false) {
+export function drawBlock (block, asBefore, asBehind, asBelow, isAlternate = false) {
 	if (block === ' ') {
 		if (asBefore + asBehind + asBelow > 1) {
 			return;
