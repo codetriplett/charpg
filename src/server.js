@@ -16,7 +16,7 @@ const template = `<!doctype html>
 	</head>
 	<body>
 		<script type="module" src="/charpg.js"></script>
-		<script type="module">charpg([['e']]);</script>
+		<script type="module">charpg([['d']]);</script>
 	</body>
 </html>`;
 

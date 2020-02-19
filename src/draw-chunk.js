@@ -6,7 +6,6 @@ export function drawChunk (chunk) {
 	const { length } = chunk;
 	const mask = prepareMask(length);
 	const frame = Array(mask.length).fill(mask[0]);
-	let index = Math.pow(length, 2);
 
 	chunk.reduce((previousLayer = [], layer, y) => {
 		layer.reduce((previousRow = [], row, z) => {
@@ -20,11 +19,11 @@ export function drawChunk (chunk) {
 					updateFrame(frame, length, x, z, y, lines);
 
 					if (block !== ' ') {
+						const index = (y + 1) * 729 + z * 27 + x;
 						updateFrame(mask, length, x, z, y, drawBlock(index));
 					}
 				}
 
-				index++;
 				return block;
 			}, '');
 

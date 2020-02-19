@@ -1,4 +1,5 @@
-export function prepareMask (length) {
+export function prepareMask () {
+	const length = 27;
 	const mask = [];
 
 	for (let i = 0; i < length * 2; i++) {

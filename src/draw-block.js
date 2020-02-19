@@ -23,12 +23,12 @@ export function drawBlock (block, asBefore, asBehind, asBelow, isAlternate = fal
 			'￿￿￿￿￿￿'
 		];
 	} else if (!isNaN(block)) {
-		const charCode = block * 4;
-		const top = Array(6).join(String.fromCharCode(charCode));
-		const front = Array(6).join(String.fromCharCode(charCode + 1));
-		const right = Array(6).join(String.fromCharCode(charCode + 2));
+		const charCode = block * 3;
+		const top = Array(5).join(String.fromCharCode(charCode));
+		const front = Array(5).join(String.fromCharCode(charCode + 1));
+		const right = String.fromCharCode(charCode + 2);
 
-		return [`${front}￿`, `${top}${right}`, '￿￿￿￿￿￿'];
+		return [`${front}${right}￿`, `${top}${right}${right}`, '￿￿￿￿￿￿'];
 	}
 
 	const {
