@@ -1,11 +1,12 @@
 import { prepareMask } from './prepare-mask.js';
+import { prepareFrame } from './prepare-frame.js';
 import { drawBlock } from './draw-block.js';
 import { updateFrame } from './update-frame.js';
 
 export function drawChunk (chunk) {
 	const { length } = chunk;
-	const mask = prepareMask(length);
-	const frame = Array(mask.length).fill(mask[0]);
+	const mask = prepareMask();
+	const frame = prepareFrame();
 
 	chunk.reduce((previousLayer = [], layer, y) => {
 		layer.reduce((previousRow = [], row, z) => {
