@@ -3,24 +3,136 @@ import { render } from './render.js';
 import { resize } from './resize.js';
 import { selectBlock } from './select-block.js';
 
-window.charpg = (chunk) => {
-	chunk = inflateChunk(chunk);
+function modifyLine (line, x, block) {
+	return `${line.slice(0, x)}${block || ' '}${line.slice(x + 1)}`;
+}
 
+export default function charpg (chunk, length = 9) {
+	chunk = inflateChunk([
+		[
+			'b b b b b',
+			'         ',
+			'         ',
+			'b b   b b',
+			'         ',
+			'         ',
+			'bbb   bbb',
+			'b b   b b',
+			'bbb   bbb'
+		],
+		[
+			'b b b b b',
+			'         ',
+			'         ',
+			'b b   b b',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'b b b b b',
+			'         ',
+			'         ',
+			'b b   b b',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'b b b b b',
+			'         ',
+			'         ',
+			'b b   b b',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'bbbbbbbbb',
+			'bbbbbbbbb',
+			'bbbbbbbbb',
+			'bbbbbbbbb',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'b b b b b',
+			'         ',
+			'         ',
+			'b b b b b',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		],
+		[
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         ',
+			'         '
+		]
+	], length);
+
+	const previewChunk = inflateChunk([], length);
 	const pre = document.createElement('pre');
+	const previewPre = document.createElement('pre');
 	let mask = render(pre, chunk);
+	render(previewPre, previewChunk, true);
+	let xPercent;
+	let yPercent;
+	let previousId;
 
 	document.body.appendChild(pre);
-	window.addEventListener('resize', () => resize(pre));
-	resize(pre);
+	document.body.appendChild(previewPre);
+	previewPre.style.opacity = 0.5;
+	window.addEventListener('resize', () => resize(pre, previewPre));
+	resize(pre, previewPre);
 
-	function modifyChunk (event, block) {
+	function modifyChunk (block, onlyPreview) {
 		event.preventDefault();
 
-		const { offsetX, offsetY } = event;
-		const { clientWidth, clientHeight } = pre;
-		const xPercent = offsetX / clientWidth;
-		const yPercent = offsetY / clientHeight;
-		const selection = selectBlock(chunk, mask, yPercent, xPercent);
+		if (xPercent === undefined || yPercent === undefined) {
+			return;
+		}
+
+		const selection = selectBlock(mask, yPercent, xPercent);
 	
 		if (!selection) {
 			return;
@@ -40,20 +152,44 @@ window.charpg = (chunk) => {
 					x += 1;
 					break;
 			}
-		} else if (y < 0) {
+		}		
+
+		const id = [x, z, y].join(':');
+
+		if (onlyPreview && id === previousId || x >= length || z >= length || y >= length || y < 0) {
 			return;
 		}
 
-		const line = chunk[y][z];
+		if (previousId) {
+			const [previousX, previousZ, previousY] = previousId.split(':').map(Number);
 
-		chunk[y][z] = `${line.slice(0, x)}${block || ' '}${line.slice(x + 1)}`;
-		mask = render(pre, chunk);
+			previewChunk[previousY][previousZ] = modifyLine(previewChunk[previousY][previousZ], previousX);
+			previewChunk[y][z] = modifyLine(previewChunk[y][z], x, 'd');
+		}
+
+		render(previewPre, previewChunk, true);
+		previousId = id;
+		
+		if (!onlyPreview) {
+			chunk[y][z] = modifyLine(chunk[y][z], x, block);
+			mask = render(pre, chunk);
+			modifyChunk('b', true);
+		}
 
 		return;
 	}
+
+	previewPre.addEventListener('mousemove', ({ offsetX, offsetY }) => {
+		const { clientWidth, clientHeight } = pre;
+
+		xPercent = offsetX / clientWidth;
+		yPercent = offsetY / clientHeight;
+
+		modifyChunk('b', true);
+	});
 	
-	pre.addEventListener('click', event => modifyChunk(event, 'd'));
-	pre.addEventListener('contextmenu', event => modifyChunk(event));
+	previewPre.addEventListener('click', () => modifyChunk('b'));
+	previewPre.addEventListener('contextmenu', () => modifyChunk());
 };
 
 const style = document.createElement('style');
@@ -85,3 +221,5 @@ ul {
 	background-color: rgba(0, 0, 0, 0.75);
 	overflow-y: scroll;
 }`;
+
+charpg();

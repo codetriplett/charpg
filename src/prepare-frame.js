@@ -1,31 +1,45 @@
-export function prepareFrame () {
-	const length = 27;
-	const upper = Array(length * 5 + 2).join('￿')
-	const lower = `${upper.slice(0, length)}/${upper.slice(0, length * 4 - 1)}/`;
+function shiftString (string, amount) {
+	return `${string.slice(-amount)}${string.slice(0, -amount)}`;
+}
+
+export function prepareFrame (length, skipBorders) {
 	const frame = [];
 
-	for (let i = 0; i < length * 2 + 1; i++) {
-		let line = upper;
+	if (skipBorders) {
+		const blank = Array(length * 5 + 2).join('￿');
 
-		if (i <= length) {
-			line = lower;
-
-			if (i % length === 0) {
-				line = line.replace(/￿(?=￿*\/$)/g, '_');
-
-				if (i === length) {
-					line = line.replace('￿/', '￿_').replace('/', '￿');
-				}
-			}
-
-			if (i < length) {
-				const shift = length - i;
-				line = `${line.slice(shift)}${line.slice(0, shift)}`;
-			}
+		for (let i = 0; i < length * 2 + 1; i++) {
+			frame.push(blank);
 		}
 
-		frame.unshift(line);
+		return frame;
 	}
 
+	const blank = Array(length * 4 + 1).join('￿');
+	const prefix = `/${Array(length).join('￿')}`;
+	const upper = `|${blank.slice(1)}|`;
+	const lower = `${blank.slice(0, length - 1)}/${blank}/`;
+
+	for (let i = 0; i < length * 2; i++) {
+		if (i < length) {
+			let line = lower;
+
+			if (!i) {
+				line = line.replace(/￿(?=￿*\/$)/g, '_');
+			}
+
+			frame.unshift(`${shiftString(line, i - length + 1)}`.replace(/^./, '|'));
+		} else {
+			let line = upper;
+
+			if (i === length) {
+				line = line.replace(/￿/g, '_');
+			}
+
+			frame.unshift(`${shiftString(prefix, i - length)}${line}`);
+		}
+	}
+
+	frame.unshift(`${Array(length + 1).join('￿')}${blank.replace(/./g, '_')}￿`);
 	return frame;
 }

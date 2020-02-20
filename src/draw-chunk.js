@@ -3,10 +3,10 @@ import { prepareFrame } from './prepare-frame.js';
 import { drawBlock } from './draw-block.js';
 import { updateFrame } from './update-frame.js';
 
-export function drawChunk (chunk) {
+export function drawChunk (chunk, skipBorders) {
 	const { length } = chunk;
-	const mask = prepareMask();
-	const frame = prepareFrame();
+	const mask = prepareMask(length);
+	const frame = prepareFrame(length, skipBorders);
 
 	chunk.reduce((previousLayer = [], layer, y) => {
 		layer.reduce((previousRow = [], row, z) => {
