@@ -2,6 +2,7 @@ import { inflateChunk } from './inflate-chunk.js';
 import { render } from './render.js';
 import { resize } from './resize.js';
 import { selectBlock } from './select-block.js';
+import { rotateChunk } from './rotate-chunk.js';
 
 function modifyLine (line, x, block) {
 	return `${line.slice(0, x)}${block || ' '}${line.slice(x + 1)}`;
@@ -190,6 +191,40 @@ export default function charpg (chunk, length = 9) {
 	
 	previewPre.addEventListener('click', () => modifyChunk('b'));
 	previewPre.addEventListener('contextmenu', () => modifyChunk());
+	
+	const buttons = document.createElement('div');
+	const counterButton = document.createElement('button');
+	const clearButton = document.createElement('button');
+	const clockwiseButton = document.createElement('button');
+
+	Object.assign(counterButton, { innerText: 'Rotate CCW', type: 'button' });
+	Object.assign(clearButton, { innerText: 'Clear All', type: 'button' });
+	Object.assign(clockwiseButton, { innerText: 'Rotate CW', type: 'button' });
+
+	counterButton.addEventListener('click', () => {
+		chunk = rotateChunk(chunk);
+		mask = render(pre, chunk);
+	});
+	
+	clearButton.addEventListener('click', () => {
+		chunk = inflateChunk([], length);
+		mask = render(pre, chunk);
+	});
+	
+	clockwiseButton.addEventListener('click', () => {
+		chunk = rotateChunk(chunk, true);
+		mask = render(pre, chunk);
+	});
+
+	buttons.appendChild(counterButton);
+	buttons.appendChild(clearButton);
+	buttons.appendChild(clockwiseButton);
+	document.body.appendChild(buttons);
+
+	const instructions = document.createElement('p');
+	
+	instructions.innerText = 'Click to place block. Right click to remove block.';
+	document.body.appendChild(instructions);
 };
 
 const style = document.createElement('style');
@@ -220,6 +255,26 @@ ul {
 	color: lightgreen;
 	background-color: rgba(0, 0, 0, 0.75);
 	overflow-y: scroll;
+}
+div { text-align: center; }
+button {
+	width: 33.333vh;
+	height: 8vh;
+	border: 1px solid black;
+	border-radius: 0.5vh;
+	margin: 0.5vh;
+	font-size: 4vh;
+	background: white;
+	cursor: pointer;
+}
+button:hover { background: lightgray; }
+p {
+	position: absolute;
+	bottom: 0;
+	width: 100%;
+	padding: 1vh;
+	font-size: 3.5vh;
+	text-align: center
 }`;
 
 charpg();
