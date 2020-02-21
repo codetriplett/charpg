@@ -52,6 +52,7 @@ module.exports = function (grunt) {
 			'./src/prepare-mask.js',
 			'./src/render.js',
 			'./src/resize.js',
+			'./src/rotate-chunk.js',
 			'./src/select-block.js',
 			'./src/update-frame.js',
 			'./src/charpg.js'
