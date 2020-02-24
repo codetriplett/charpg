@@ -2,7 +2,7 @@
   "name": "charpg",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "lib/charpg.js",
   "scripts": {
     "test": "jest --watch --runInBand",
     "build": "rimraf dist lib && grunt",

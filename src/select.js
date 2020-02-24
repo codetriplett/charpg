@@ -1,9 +1,11 @@
-export function selectBlock (mask, yPercent, xPercent) {
+export function select (mask, yPercent, xPercent) {
 	const lineIndex = Math.floor(mask.length * yPercent);
 	const characterIndex = Math.floor(mask[0].length * xPercent);
 	const charCode = (mask[lineIndex] || '').charCodeAt(characterIndex);
 
-	if (charCode >= 65535 || isNaN(charCode)) {
+	if (charCode >= 65535) {
+		return null;
+	} else if (isNaN(charCode)) {
 		return;
 	}
 

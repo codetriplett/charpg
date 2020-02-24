@@ -1,144 +1,95 @@
-import { inflateChunk } from './inflate-chunk.js';
+import { setup } from './setup.js';
+import { io } from './io.js';
+import { inflate } from './inflate.js';
 import { render } from './render.js';
 import { resize } from './resize.js';
-import { selectBlock } from './select-block.js';
-import { rotateChunk } from './rotate-chunk.js';
+import { modify } from './modify.js';
+import { select } from './select.js';
+import { rotate } from './rotate.js';
 
-function modifyLine (line, x, block) {
-	return `${line.slice(0, x)}${block || ' '}${line.slice(x + 1)}`;
-}
-
-export default function charpg (chunk, length = 9) {
-	chunk = inflateChunk([
-		[
-			'b b b b b',
-			'         ',
-			'         ',
-			'b b   b b',
-			'         ',
-			'         ',
-			'bbb   bbb',
-			'b b   b b',
-			'bbb   bbb'
-		],
-		[
-			'b b b b b',
-			'         ',
-			'         ',
-			'b b   b b',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'b b b b b',
-			'         ',
-			'         ',
-			'b b   b b',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'b b b b b',
-			'         ',
-			'         ',
-			'b b   b b',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'bbbbbbbbb',
-			'bbbbbbbbb',
-			'bbbbbbbbb',
-			'bbbbbbbbb',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'b b b b b',
-			'         ',
-			'         ',
-			'b b b b b',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		],
-		[
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         ',
-			'         '
-		]
-	], length);
-
-	const previewChunk = inflateChunk([], length);
+export default function charpg () {
+	const length = 9;
+	const previewChunk = inflate([], length);
 	const pre = document.createElement('pre');
 	const previewPre = document.createElement('pre');
-	let mask = render(pre, chunk);
-	render(previewPre, previewChunk, true);
+	let chunkCoordinates = [0, 0, 0];
+	let rotation = 0;
 	let xPercent;
 	let yPercent;
 	let previousId;
+	let chunk;
+	let mask;
+
+	const {
+		counterButton,
+		clockwiseButton,
+		loadLeftButton,
+		loadRightButton,
+		saveButton,
+		typeSelect
+	} = setup();
+	
+	let selectedType = typeSelect.value;
+
+	function load (change) {
+		let [x, z, y] = chunkCoordinates;
+
+		if (change) {
+			switch (rotation) {
+				case 0:
+					x += change;
+					break;
+				case 1:
+					z += change;
+					break;
+				case 2:
+					x += -change;
+					break;
+				case 3:
+					z += -change;
+					break;
+			}
+		}
+
+		return io(x, z, y).then((adjacentChunk = []) => {
+			chunkCoordinates = [x, z, y];
+
+			switch (rotation) {
+				case 0:
+					chunk = adjacentChunk;
+					break;
+				case 1:
+					chunk = rotate(adjacentChunk);
+					break;
+				case 2:
+					chunk = rotate(rotate(adjacentChunk));
+					break;
+				case 3:
+					chunk = rotate(adjacentChunk, true);
+					break;
+			}
+
+			mask = render(chunk, pre);
+			render(inflate([]), previewPre, true);
+		});
+	}
 
 	document.body.appendChild(pre);
 	document.body.appendChild(previewPre);
 	previewPre.style.opacity = 0.5;
 	window.addEventListener('resize', () => resize(pre, previewPre));
-	resize(pre, previewPre);
 
 	function modifyChunk (block, onlyPreview) {
-		event.preventDefault();
-
 		if (xPercent === undefined || yPercent === undefined) {
 			return;
 		}
 
-		const selection = selectBlock(mask, yPercent, xPercent);
-	
+		const selection = select(mask, yPercent, xPercent);
+		
 		if (!selection) {
 			return;
 		}
-	
+		
 		let [x, z, y, offset] = selection;
 
 		if (block) {
@@ -153,31 +104,37 @@ export default function charpg (chunk, length = 9) {
 					x += 1;
 					break;
 			}
-		}		
+		}
 
-		const id = [x, z, y].join(':');
+		const coordinates = [x, z, y];
+		const id = coordinates.join(':');
 
-		if (onlyPreview && id === previousId || x >= length || z >= length || y >= length || y < 0) {
+		if (onlyPreview && id === previousId
+				|| x >= length || z >= length || y >= length || y < 0) {
 			return;
 		}
 
 		if (previousId) {
-			const [previousX, previousZ, previousY] = previousId.split(':').map(Number);
-
-			previewChunk[previousY][previousZ] = modifyLine(previewChunk[previousY][previousZ], previousX);
-			previewChunk[y][z] = modifyLine(previewChunk[y][z], x, 'd');
+			modify(previousId.split(':').map(Number), previewChunk);
+			modify(coordinates, previewChunk, selectedType);
 		}
 
-		render(previewPre, previewChunk, true);
+		render(previewChunk, previewPre, true);
 		previousId = id;
 		
 		if (!onlyPreview) {
-			chunk[y][z] = modifyLine(chunk[y][z], x, block);
-			mask = render(pre, chunk);
-			modifyChunk('b', true);
+			modify(coordinates, chunk, block);
+			mask = render(chunk, pre);
+			modifyChunk(selectedType, true);
 		}
 
 		return;
+	}
+
+	function rotateChunk (change) {
+		chunk = rotate(chunk, change < 0);
+		mask = render(chunk, pre);
+		rotation = (rotation + change + 4) % 4;
 	}
 
 	previewPre.addEventListener('mousemove', ({ offsetX, offsetY }) => {
@@ -186,95 +143,50 @@ export default function charpg (chunk, length = 9) {
 		xPercent = offsetX / clientWidth;
 		yPercent = offsetY / clientHeight;
 
-		modifyChunk('b', true);
+		modifyChunk(selectedType, true);
 	});
 	
-	previewPre.addEventListener('click', () => modifyChunk('b'));
-	previewPre.addEventListener('contextmenu', () => modifyChunk());
-	
-	const buttons = document.createElement('div');
-	const counterButton = document.createElement('button');
-	const clearButton = document.createElement('button');
-	const clockwiseButton = document.createElement('button');
-
-	Object.assign(counterButton, { innerText: 'Rotate CCW', type: 'button' });
-	Object.assign(clearButton, { innerText: 'Clear All', type: 'button' });
-	Object.assign(clockwiseButton, { innerText: 'Rotate CW', type: 'button' });
-
-	counterButton.addEventListener('click', () => {
-		chunk = rotateChunk(chunk);
-		mask = render(pre, chunk);
-	});
-	
-	clearButton.addEventListener('click', () => {
-		chunk = inflateChunk([], length);
-		mask = render(pre, chunk);
-	});
-	
-	clockwiseButton.addEventListener('click', () => {
-		chunk = rotateChunk(chunk, true);
-		mask = render(pre, chunk);
+	previewPre.addEventListener('click', event => {
+		event.preventDefault();
+		modifyChunk(selectedType);
 	});
 
-	buttons.appendChild(counterButton);
-	buttons.appendChild(clearButton);
-	buttons.appendChild(clockwiseButton);
-	document.body.appendChild(buttons);
+	previewPre.addEventListener('contextmenu', event => {
+		event.preventDefault();
+		modifyChunk();
+	});
 
-	const instructions = document.createElement('p');
-	
-	instructions.innerText = 'Click to place block. Right click to remove block.';
-	document.body.appendChild(instructions);
+	counterButton.addEventListener('click', () => rotateChunk(1));
+	clockwiseButton.addEventListener('click', () => rotateChunk(-1));
+	loadLeftButton.addEventListener('click', () => load(-1));
+	loadRightButton.addEventListener('click', () => load(1));
+
+	typeSelect.addEventListener('change', () => {
+		selectedType = typeSelect.value;
+	});
+
+	saveButton.addEventListener('click', () => {
+		let correctedChunk;
+
+		switch (rotation) {
+			case 0:
+				correctedChunk = chunk;
+				break;
+			case 1:
+				correctedChunk = rotate(chunk, true);
+				break;
+			case 2:
+				correctedChunk = rotate(rotate(chunk, true), true);
+				break;
+			case 3:
+				correctedChunk = rotate(chunk);
+				break;
+		}
+
+		io(...chunkCoordinates, correctedChunk)
+	});
+
+	load().then(() => resize(pre, previewPre));
 };
-
-const style = document.createElement('style');
-document.head.appendChild(style);
-
-style.innerHTML = `html, body { width: 100%; height: 100%; }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: monospace; }
-li + li { margin-top: 15px; }
-body > pre {
-	position: absolute;
-	left: 50%;
-	top: 50%;
-	cursor: default;
-	user-select: none;
-	-webkit-user-select: none;
-	-moz-user-select: none;
-	-ms-user-select: none;
-}
-ul {
-	list-style: none;
-	display: none;
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
-	padding: 15px;
-	color: lightgreen;
-	background-color: rgba(0, 0, 0, 0.75);
-	overflow-y: scroll;
-}
-div { text-align: center; }
-button {
-	width: 33.333vh;
-	height: 8vh;
-	border: 1px solid black;
-	border-radius: 0.5vh;
-	margin: 0.5vh;
-	font-size: 4vh;
-	background: white;
-	cursor: pointer;
-}
-button:hover { background: lightgray; }
-p {
-	position: absolute;
-	bottom: 0;
-	width: 100%;
-	padding: 1vh;
-	font-size: 3.5vh;
-	text-align: center
-}`;
 
 charpg();

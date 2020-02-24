@@ -1,4 +1,4 @@
-export function rotateChunk (chunk, reversed) {
+export function rotate (chunk, reversed) {
 	const { length } = chunk;
 	const lastIndex = length - 1;
 	const result = [];

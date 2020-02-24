@@ -19,7 +19,8 @@ module.exports = function (grunt) {
 		babel: {
 			main: {
 				files: {
-					'./dist/charpg.min.js': './dist/charpg.min.js'
+					'./dist/charpg.min.js': './dist/charpg.min.js',
+					'./lib/charpg.js': './lib/charpg.js'
 				}
 			}
 		},
@@ -34,7 +35,8 @@ module.exports = function (grunt) {
 					].join('')
 				},
 				files: {
-					'dist/charpg.min.js': 'dist/charpg.min.js'
+					'dist/charpg.min.js': 'dist/charpg.min.js',
+					'./lib/charpg.js': './lib/charpg.js'
 				}
 			}
 		}
@@ -47,15 +49,22 @@ module.exports = function (grunt) {
 		merge('./dist/charpg.min.js', [
 			'./src/draw-block.js',
 			'./src/draw-chunk.js',
-			'./src/inflate-chunk.js',
+			'./src/inflate.js',
+			'./src/io.js',
+			'./src/modify.js',
 			'./src/prepare-frame.js',
 			'./src/prepare-mask.js',
 			'./src/render.js',
 			'./src/resize.js',
-			'./src/rotate-chunk.js',
-			'./src/select-block.js',
+			'./src/rotate.js',
+			'./src/select.js',
+			'./src/setup.js',
 			'./src/update-frame.js',
 			'./src/charpg.js'
+		]);
+
+		merge('./lib/charpg.js', [
+			'./src/server.js'
 		]);
 	});
 
