@@ -12,6 +12,8 @@ export default function charpg () {
 	const previewChunk = inflate([], length);
 	const pre = document.createElement('pre');
 	const previewPre = document.createElement('pre');
+	const leftPre = document.createElement('pre');
+	const rightPre = document.createElement('pre');
 	let chunkCoordinates = [0, 0, 0];
 	let rotation = 0;
 	let xPercent;
@@ -31,7 +33,7 @@ export default function charpg () {
 	
 	let selectedType = typeSelect.value;
 
-	function load (change) {
+	function locateCoordinates (change) {
 		let [x, z, y] = chunkCoordinates;
 
 		if (change) {
@@ -51,33 +53,78 @@ export default function charpg () {
 			}
 		}
 
-		return io(x, z, y).then((adjacentChunk = []) => {
-			chunkCoordinates = [x, z, y];
+		return [x, z, y];
+	}
 
+	function loadAndRotate (coordinates) {
+		return io(...coordinates).then((chunk = []) => {
 			switch (rotation) {
-				case 0:
-					chunk = adjacentChunk;
-					break;
-				case 1:
-					chunk = rotate(adjacentChunk);
-					break;
-				case 2:
-					chunk = rotate(rotate(adjacentChunk));
-					break;
-				case 3:
-					chunk = rotate(adjacentChunk, true);
-					break;
+				case 1: return rotate(chunk);
+				case 2: return rotate(rotate(chunk));
+				case 3: return rotate(chunk, true);
 			}
 
-			mask = render(chunk, pre);
-			render(inflate([]), previewPre, true);
+			return chunk;
 		});
 	}
 
+	function loadAdjacents () {
+		return Promise.all([
+			loadAndRotate(locateCoordinates(-1)),
+			loadAndRotate(locateCoordinates(1))
+		]).then(([leftChunk, rightChunk]) => {
+			render(leftChunk, leftPre, true);
+			render(rightChunk, rightPre, true);
+		});
+	}
+
+	function save () {
+		let correctedChunk;
+
+		switch (rotation) {
+			case 0:
+				correctedChunk = chunk;
+				break;
+			case 1:
+				correctedChunk = rotate(chunk, true);
+				break;
+			case 2:
+				correctedChunk = rotate(rotate(chunk, true), true);
+				break;
+			case 3:
+				correctedChunk = rotate(chunk);
+				break;
+		}
+
+		io(...chunkCoordinates, correctedChunk)
+	}
+
+	function load (change) {
+		if (change) {
+			save();
+		}
+
+		const coordinates = locateCoordinates(change);
+
+		return loadAndRotate(coordinates).then((adjacentChunk = []) => {
+			chunkCoordinates = coordinates;
+			chunk = adjacentChunk;
+			mask = render(chunk, pre);
+			render(inflate([]), previewPre, true);
+
+			return loadAdjacents();
+		});
+	}
+
+	leftPre.style.opacity = 0.5;
+	rightPre.style.opacity = 0.5;
+	previewPre.style.opacity = 0.5;
+
+	document.body.appendChild(leftPre);
+	document.body.appendChild(rightPre);
 	document.body.appendChild(pre);
 	document.body.appendChild(previewPre);
-	previewPre.style.opacity = 0.5;
-	window.addEventListener('resize', () => resize(pre, previewPre));
+	window.addEventListener('resize', () => resize(pre, previewPre, leftPre, rightPre));
 
 	function modifyChunk (block, onlyPreview) {
 		if (xPercent === undefined || yPercent === undefined) {
@@ -132,9 +179,11 @@ export default function charpg () {
 	}
 
 	function rotateChunk (change) {
+		rotation = (rotation + change + 4) % 4;
 		chunk = rotate(chunk, change < 0);
 		mask = render(chunk, pre);
-		rotation = (rotation + change + 4) % 4;
+
+		loadAdjacents();
 	}
 
 	previewPre.addEventListener('mousemove', ({ offsetX, offsetY }) => {
@@ -160,33 +209,14 @@ export default function charpg () {
 	clockwiseButton.addEventListener('click', () => rotateChunk(-1));
 	loadLeftButton.addEventListener('click', () => load(-1));
 	loadRightButton.addEventListener('click', () => load(1));
+	saveButton.addEventListener('click', () => save());
+
 
 	typeSelect.addEventListener('change', () => {
 		selectedType = typeSelect.value;
 	});
 
-	saveButton.addEventListener('click', () => {
-		let correctedChunk;
-
-		switch (rotation) {
-			case 0:
-				correctedChunk = chunk;
-				break;
-			case 1:
-				correctedChunk = rotate(chunk, true);
-				break;
-			case 2:
-				correctedChunk = rotate(rotate(chunk, true), true);
-				break;
-			case 3:
-				correctedChunk = rotate(chunk);
-				break;
-		}
-
-		io(...chunkCoordinates, correctedChunk)
-	});
-
-	load().then(() => resize(pre, previewPre));
+	load().then(() => resize(pre, previewPre, leftPre, rightPre));
 };
 
 charpg();

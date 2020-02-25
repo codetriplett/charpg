@@ -25,7 +25,7 @@ export function setup () {
 
 	Object.keys(patterns).forEach(type => {
 		const option = document.createElement('option');
-		Object.assign(option, { innerText: type, value: type });
+		Object.assign(option, { innerText: patterns[type][0], value: type });
 		typeSelect.appendChild(option);
 	});
 
@@ -43,7 +43,7 @@ export function setup () {
 		box-sizing: border-box;
 		font-family: monospace;
 	}
-	html, body { width: 100%; height: 100%; }
+	html, body { width: 100%; height: 100%; overflow: hidden; }
 	body > pre {
 		position: absolute;
 		left: 50%;
@@ -53,6 +53,7 @@ export function setup () {
 		-webkit-user-select: none;
 		-moz-user-select: none;
 		-ms-user-select: none;
+		transform-origin: left top;
 	}
 	ul {
 		list-style: none;

@@ -1,11 +1,12 @@
 export const patterns = {
-	d: ['         ', '         '],
-	b: ['__/___|_/', '/___|___|'],
-	s: ['. ` ` . `', ' . `` . `'],
-	w: ['~ ~      ', '~ ~      '],
-	t: [' (o) || |', ' (o)| |||'],
-	l: [' ^ ^V v v', '^ ^  v Vv'],
-	o: [' o    O O', '  O o   o']
+	d: ['dirt', '         ', '         '],
+	b: ['brick', '__/___|_/', '/___|___|'],
+	s: ['sand', '. ` ` . `', ' . `` . `'],
+	w: ['water', '~ ~      ', '~ ~      '],
+	t: ['tree', ' (o) || |', ' (o)| |||'],
+	l: ['leaf', ' ^ ^V v v', '^ ^  v Vv'],
+	o: ['ore', ' o    O O', '  O o   o'],
+	g: ['glass', '\\ \\ \\ \\ \\', ' \\ \\ \\ \\\\']
 };
 
 export function drawBlock (block, asBefore, asBehind, asBelow, isAlternate = false) {
@@ -33,7 +34,7 @@ export function drawBlock (block, asBefore, asBehind, asBelow, isAlternate = fal
 	}
 
 	const {
-		[block]: { [+isAlternate]: pattern = '         ' } = []
+		[block]: { [isAlternate + 1]: pattern = '         ' } = []
 	} = patterns;
 
 	const above = pattern.slice(0, 4).replace(/ /g, '_');

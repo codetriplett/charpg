@@ -1,6 +1,5 @@
 const http = require('http');
 const fs = require('fs');
-const port = 8080;
 
 const types = {
 	txt: 'text/html; charset=utf-8',
@@ -15,17 +14,6 @@ const types = {
 	png: 'image/png',
 	ico: 'image/x-icon'
 };
-
-const template = `<!doctype html>
-<html>
-	<head>
-		<title>ChaRPG</title>
-		<link rel="icon" type="image/x-icon" href="/icon.ico">
-	</head>
-	<body>
-		<script src="/charpg.js"></script>
-	</body>
-</html>`;
 
 function respond (res, content, type) {
 	let status = 200;
@@ -45,42 +33,31 @@ function respond (res, content, type) {
 	res.end(content);
 }
 
-http.createServer((req, res) => {
-	const { url, method, headers: { host } } = req;
-	const extension = (url.match(/^.*?(\.[^.]*)?$/)[1] || '').slice(1);
-	const type = types[extension] || '';
-	const encoding = type.endsWith('; charset=utf-8') ? 'utf8' : '';
-
-	if (!extension) {
-		let content = template;
-
-		if (/^localhost(:\d+)?$/.test(host)) {
-			content = content.replace('script', 'script type="module"');
+export default function (port, directory) {
+	http.createServer(({ url }, res) => {
+		let extension = (url.match(/^.*?(\.[^.]*)?$/)[1] || '').slice(1);
+	
+		if (url === '/') {
+			url += 'index';
 		}
-
-		respond(res, content, types.html);
-		return;
-	} else if (method === 'POST') {
-		const [coordinates] = url.match(/[^/]+(?=\.json$)/) || [];
-		let body = '';
-
-		if (coordinates.split('_').some(value => value < -8 || value > 8)) {
-			respond(res);
-			return;
+	
+		if (!extension) {
+			extension = '.html';
+			url += extension;
 		}
+	
+		const type = types[extension] || '';
+		const encoding = type.endsWith('; charset=utf-8') ? 'utf8' : '';
 
-		req.on('data', chunk => body += chunk.toString());
-
-		req.on('end', () => {
-			fs.writeFile(`${__dirname}${url}`, body, encoding, err => {
-				respond(res, err ? undefined : 'Success');
+		fs.readFile(`${directory}${url}`, encoding, (err, content) => {
+			if (!err || extension !== '.html') {
+				respond(res, err ? undefined : content, type);
+				return;
+			}
+			
+			fs.readFile(`${directory}/404.html`, encoding, (err, content) => {
+				respond(res, err ? undefined : content, type);
 			});
 		});
-
-		return;
-	}
-
-	fs.readFile(`${__dirname}${url}`, encoding, (err, content) => {
-		respond(res, err ? undefined : content, type);
-	});
-}).listen(port, () => console.log(`server is listening on ${port}`));
+	}).listen(port, () => console.log(`server is listening on ${port}`));
+}

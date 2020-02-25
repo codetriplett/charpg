@@ -60,7 +60,7 @@ module.exports = function (grunt) {
 			'./src/select.js',
 			'./src/setup.js',
 			'./src/update-frame.js',
-			'./src/charpg.js'
+			'./src/client.js'
 		]);
 
 		merge('./lib/charpg.js', [
