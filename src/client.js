@@ -71,12 +71,13 @@ export default function charpg () {
 
 	function loadAdjacents () {
 		return Promise.all([
-			loadAndRotate(locateCoordinates(-1)),
-			loadAndRotate(locateCoordinates(1))
-		]).then(([leftChunk, rightChunk]) => {
-			render(leftChunk, leftPre, true, isRotated);
-			render(rightChunk, rightPre, true, isRotated);
-		});
+			loadAndRotate(locateCoordinates(-1)).then(leftChunk => {
+				render(leftChunk, leftPre, true, isRotated);
+			}),
+			loadAndRotate(locateCoordinates(1)).then(rightChunk => {
+				render(rightChunk, rightPre, true, isRotated);
+			})
+		]);
 	}
 
 	function save () {
@@ -101,10 +102,6 @@ export default function charpg () {
 	}
 
 	function load (change) {
-		if (change) {
-			save();
-		}
-
 		const coordinates = locateCoordinates(change);
 
 		return loadAndRotate(coordinates).then((adjacentChunk = []) => {
@@ -180,10 +177,13 @@ export default function charpg () {
 	}
 
 	function rotateChunk (change) {
-		rotation = (rotation + change + 4) % 4;
-		chunk = rotate(chunk, change < 0);
-		mask = render(chunk, pre);
+		if (change > 0 === isRotated) {
+			rotation = (rotation + change + 4) % 4;
+			chunk = rotate(chunk, change < 0);
+		}
 
+		isRotated = !isRotated;
+		mask = render(chunk, pre, false, isRotated);
 		loadAdjacents();
 	}
 
@@ -211,7 +211,6 @@ export default function charpg () {
 	loadLeftButton.addEventListener('click', () => load(-1));
 	loadRightButton.addEventListener('click', () => load(1));
 	saveButton.addEventListener('click', () => save());
-
 
 	typeSelect.addEventListener('change', () => {
 		selectedType = typeSelect.value;
