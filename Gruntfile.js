@@ -49,6 +49,7 @@ module.exports = function (grunt) {
 		merge('./dist/charpg.min.js', [
 			'./src/draw-block.js',
 			'./src/draw-chunk.js',
+			'./src/flip.js',
 			'./src/inflate.js',
 			'./src/io.js',
 			'./src/modify.js',
