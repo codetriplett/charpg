@@ -1,5 +1,5 @@
-import drawBlock from '../draw-block';
-import updateFrame from '../update-frame';
+import { drawBlock } from '../draw-block';
+import { updateFrame } from '../update-frame';
 
 describe('update-frame', () => {
 	let frame;
@@ -15,7 +15,7 @@ describe('update-frame', () => {
 	});
 
 	it('block', () => {
-		const block = drawBlock('e', false, false, false);
+		const block = drawBlock(false, false, false, '');
 		const empty = Array(5).fill(Array(13).join('￿'));
 
 		updateFrame(empty, 2, 0, 0, 0, block);
@@ -23,7 +23,7 @@ describe('update-frame', () => {
 	});
 
 	it('after', () => {
-		const block = drawBlock('e', false, false, false);
+		const block = drawBlock(false, false, false, '');
 		updateFrame(frame, 2, 1, 0, 0, block);
 
 		expect(frame).toEqual([
@@ -36,7 +36,7 @@ describe('update-frame', () => {
 	});
 
 	it('as before', () => {
-		const block = drawBlock('e', true, false, false);
+		const block = drawBlock(true, false, false, '');
 		updateFrame(frame, 2, 1, 0, 0, block);
 
 		expect(frame).toEqual([
@@ -49,7 +49,7 @@ describe('update-frame', () => {
 	});
 
 	it('as before when only before was above', () => {
-		const block = drawBlock('e', true, false, false);
+		const block = drawBlock(true, false, false, '');
 		frame[3] = '￿|   |￿￿￿￿￿￿';
 		updateFrame(frame, 2, 1, 0, 0, block);
 
@@ -63,7 +63,7 @@ describe('update-frame', () => {
 	});
 
 	it('ahead', () => {
-		const block = drawBlock('e', false, false, false);
+		const block = drawBlock(false, false, false, '');
 		updateFrame(frame, 2, 0, 1, 0, block);
 
 		expect(frame).toEqual([
@@ -76,7 +76,7 @@ describe('update-frame', () => {
 	});
 
 	it('as before', () => {
-		const block = drawBlock('e', false, true, false);
+		const block = drawBlock(false, true, false, '');
 		updateFrame(frame, 2, 0, 1, 0, block);
 
 		expect(frame).toEqual([
@@ -89,7 +89,7 @@ describe('update-frame', () => {
 	});
 
 	it('above', () => {
-		const block = drawBlock('e', false, false, false);
+		const block = drawBlock(false, false, false, '');
 		updateFrame(frame, 2, 0, 0, 1, block);
 
 		expect(frame).toEqual([
@@ -102,7 +102,7 @@ describe('update-frame', () => {
 	});
 
 	it('as below', () => {
-		const block = drawBlock('e', false, false, true);
+		const block = drawBlock(false, false, true, '');
 		updateFrame(frame, 2, 0, 0, 1, block);
 
 		expect(frame).toEqual([

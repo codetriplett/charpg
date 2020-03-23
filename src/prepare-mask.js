@@ -1,4 +1,4 @@
-export function prepareMask (length) {
+export function prepareMask (length, isRotated) {
 	const mask = [];
 
 	for (let i = 0; i < length * 2; i++) {
@@ -21,7 +21,8 @@ export function prepareMask (length) {
 		}
 
 		for (let j = 0; j < length; j++) {
-			content += Array(5).join(String.fromCharCode(code + j * 3));
+			const offset = (isRotated ? length - j - 1 : j) * 3;
+			content += Array(5).join(String.fromCharCode(code + offset));
 		}
 
 		mask.unshift(`${prefix}${content}${content.slice(-1)}${suffix}`);

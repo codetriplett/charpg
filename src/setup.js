@@ -1,4 +1,4 @@
-import { patterns } from './draw-block.js';
+import { patterns } from './draw-chunk.js';
 
 export function setup () {
 	const style = document.createElement('style');

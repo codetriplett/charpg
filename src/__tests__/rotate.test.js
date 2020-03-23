@@ -1,4 +1,4 @@
-import { rotateChunk } from '../rotate-chunk';
+import { rotate } from '../rotate';
 
 describe('rotate-chunk', () => {
 	let chunk;
@@ -12,7 +12,7 @@ describe('rotate-chunk', () => {
 	});
 
 	it('rotates counter clockwise', () => {
-		const actual = rotateChunk(chunk);
+		const actual = rotate(chunk);
 
 		expect(actual).toEqual([
 			['369', '258', '147'],
@@ -22,7 +22,7 @@ describe('rotate-chunk', () => {
 	});
 
 	it('rotates clockwise', () => {
-		const actual = rotateChunk(chunk, true);
+		const actual = rotate(chunk, true);
 
 		expect(actual).toEqual([
 			['741', '852', '963'],

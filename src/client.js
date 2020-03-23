@@ -16,6 +16,7 @@ export default function charpg () {
 	const rightPre = document.createElement('pre');
 	let chunkCoordinates = [0, 0, 0];
 	let rotation = 0;
+	let isRotated = false;
 	let xPercent;
 	let yPercent;
 	let previousId;
@@ -73,8 +74,8 @@ export default function charpg () {
 			loadAndRotate(locateCoordinates(-1)),
 			loadAndRotate(locateCoordinates(1))
 		]).then(([leftChunk, rightChunk]) => {
-			render(leftChunk, leftPre, true);
-			render(rightChunk, rightPre, true);
+			render(leftChunk, leftPre, true, isRotated);
+			render(rightChunk, rightPre, true, isRotated);
 		});
 	}
 
@@ -109,8 +110,8 @@ export default function charpg () {
 		return loadAndRotate(coordinates).then((adjacentChunk = []) => {
 			chunkCoordinates = coordinates;
 			chunk = adjacentChunk;
-			mask = render(chunk, pre);
-			render(inflate([]), previewPre, true);
+			mask = render(chunk, pre, false, isRotated);
+			render(inflate([]), previewPre, true, isRotated);
 
 			return loadAdjacents();
 		});
@@ -131,7 +132,7 @@ export default function charpg () {
 			return;
 		}
 
-		const selection = select(mask, yPercent, xPercent);
+		const selection = select(mask, yPercent, xPercent, isRotated);
 		
 		if (!selection) {
 			return;
@@ -148,7 +149,7 @@ export default function charpg () {
 					z += 1;
 					break;
 				case 1:
-					x += 1;
+					x += isRotated ? length : 1;
 					break;
 			}
 		}
@@ -166,12 +167,12 @@ export default function charpg () {
 			modify(coordinates, previewChunk, selectedType);
 		}
 
-		render(previewChunk, previewPre, true);
+		render(previewChunk, previewPre, true, isRotated);
 		previousId = id;
 		
 		if (!onlyPreview) {
 			modify(coordinates, chunk, block);
-			mask = render(chunk, pre);
+			mask = render(chunk, pre, false, isRotated);
 			modifyChunk(selectedType, true);
 		}
 
