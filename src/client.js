@@ -10,7 +10,7 @@ import { rotate } from './rotate.js';
 export default function charpg () {
 	const length = 9;
 	const previewChunk = inflate([], length);
-	const pre = document.createElement('pre');
+	const div = document.createElement('div');
 	const previewPre = document.createElement('pre');
 	const leftPre = document.createElement('pre');
 	const rightPre = document.createElement('pre');
@@ -22,6 +22,8 @@ export default function charpg () {
 	let previousId;
 	let chunk;
 	let mask;
+
+	div.className = 'frame';
 
 	const {
 		counterButton,
@@ -107,7 +109,7 @@ export default function charpg () {
 		return loadAndRotate(coordinates).then((adjacentChunk = []) => {
 			chunkCoordinates = coordinates;
 			chunk = adjacentChunk;
-			mask = render(chunk, pre, false, isRotated);
+			mask = render(chunk, div, false, isRotated);
 			render(inflate([]), previewPre, true, isRotated);
 
 			return loadAdjacents();
@@ -120,9 +122,9 @@ export default function charpg () {
 
 	document.body.appendChild(leftPre);
 	document.body.appendChild(rightPre);
-	document.body.appendChild(pre);
+	document.body.appendChild(div);
 	document.body.appendChild(previewPre);
-	window.addEventListener('resize', () => resize(pre, previewPre, leftPre, rightPre));
+	window.addEventListener('resize', () => resize(div, previewPre, leftPre, rightPre));
 
 	function modifyChunk (block, onlyPreview) {
 		if (xPercent === undefined || yPercent === undefined) {
@@ -169,7 +171,7 @@ export default function charpg () {
 		
 		if (!onlyPreview) {
 			modify(coordinates, chunk, block);
-			mask = render(chunk, pre, false, isRotated);
+			mask = render(chunk, div, false, isRotated);
 			modifyChunk(selectedType, true);
 		}
 
@@ -183,12 +185,12 @@ export default function charpg () {
 		}
 
 		isRotated = !isRotated;
-		mask = render(chunk, pre, false, isRotated);
+		mask = render(chunk, div, false, isRotated);
 		loadAdjacents();
 	}
 
 	previewPre.addEventListener('mousemove', ({ offsetX, offsetY }) => {
-		const { clientWidth, clientHeight } = pre;
+		const { clientWidth, clientHeight } = div;
 
 		xPercent = offsetX / clientWidth;
 		yPercent = offsetY / clientHeight;
@@ -216,7 +218,7 @@ export default function charpg () {
 		selectedType = typeSelect.value;
 	});
 
-	load().then(() => resize(pre, previewPre, leftPre, rightPre));
+	load().then(() => resize(div, previewPre, leftPre, rightPre));
 };
 
 charpg();

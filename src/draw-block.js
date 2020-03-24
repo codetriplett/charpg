@@ -5,7 +5,11 @@ export function drawBlock (asBefore, asBehind, asBelow, pattern) {
 		const front = Array(5).join(String.fromCharCode(charCode + 1));
 		const right = String.fromCharCode(charCode + 2);
 
-		return [`${front}${right}￿`, `${top}${right}${right}`, '￿￿￿￿￿￿'];
+		return [
+			`${front}${asBehind ? right : front[0]}${asBehind ? '￿' : right}`,
+			`${top}${asBehind ? right : top[0]}${right}`,
+			'￿￿￿￿￿￿'
+		];
 	} else if (pattern === undefined) {
 		if (asBefore + asBehind + asBelow > 1) {
 			return;

@@ -15,9 +15,12 @@ export const patterns = {
 	g: ['glass', '\\ \\ \\ \\ \\', ' \\ \\ \\ \\\\']
 };
 
+export const alphabet = Object.keys(patterns).join('');
+
 export function drawChunk (chunk, skipBorders, isRotated) {
 	const { length } = chunk;
 	const mask = prepareMask(length, isRotated);
+	const palette = prepareFrame(length, true);
 	const frame = prepareFrame(length, skipBorders);
 
 	chunk.reduce((previousLayer = [], layer, y) => {
@@ -46,8 +49,11 @@ export function drawChunk (chunk, skipBorders, isRotated) {
 					updateFrame(frame, length, i, z, y, lines);
 
 					if (block !== ' ') {
-						const index = (y + 1) * 729 + z * 27 + x;
-						updateFrame(mask, length, i, z, y, drawBlock(index));
+						let index = alphabet.indexOf(block);
+						updateFrame(palette, length, i, z, y, drawBlock(index));
+
+						index = (y + 1) * 729 + z * 27 + x;
+						updateFrame(mask, length, i, z, y, drawBlock(index, true));
 					}
 				}
 
@@ -63,8 +69,9 @@ export function drawChunk (chunk, skipBorders, isRotated) {
 
 	if (isRotated) {
 		flip(frame);
+		flip(palette);
 		flip(mask);
 	}
 
-	return Object.assign(frame, { mask });
+	return Object.assign(frame, { palette, mask });
 }

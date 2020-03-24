@@ -16,6 +16,7 @@ export function setup () {
 	Object.assign(loadRightButton, { innerText: 'Load Right', type: 'button' });
 	Object.assign(saveButton, { innerText: 'Save', type: 'button', className: 'save' });
 	
+	buttons.className = 'controls';
 	buttons.appendChild(counterButton);
 	buttons.appendChild(loadLeftButton);
 	buttons.appendChild(saveButton);
@@ -44,7 +45,7 @@ export function setup () {
 		font-family: monospace;
 	}
 	html, body { width: 100%; height: 100%; overflow: hidden; }
-	body > pre {
+	body > pre, body > .frame {
 		position: absolute;
 		left: 50%;
 		top: 50%;
@@ -55,6 +56,39 @@ export function setup () {
 		-ms-user-select: none;
 		transform-origin: left top;
 	}
+	.frame pre { float: left; }
+	pre.dirt { color: #310; }
+	pre.dirt.above { background: #531; }
+	pre.dirt.ahead { background: #420; }
+	pre.dirt.after { background: #420; }
+	pre.brick { color: #b87; }
+	pre.brick.above { background: #a32; }
+	pre.brick.ahead { background: #821; }
+	pre.brick.after { background: #710; }
+	pre.sand { color: #761; }
+	pre.sand.above { background: #fb5; }
+	pre.sand.ahead { background: #da4; }
+	pre.sand.after { background: #b94; }
+	pre.water { color: #98f; }
+	pre.water.above { background: #33c; }
+	pre.water.ahead { background: #22a; }
+	pre.water.after { background: #118; }
+	pre.tree { color: #444; }
+	pre.tree.above { background: #cb6; color: #a72; }
+	pre.tree.ahead { background: #997; }
+	pre.tree.after { background: #886; }
+	pre.leaf { color: #041; }
+	pre.leaf.above { background: #392; }
+	pre.leaf.ahead { background: #372; }
+	pre.leaf.after { background: #262; }
+	pre.ore { color: #ba5; }
+	pre.ore.above { background: #775; }
+	pre.ore.ahead { background: #665; }
+	pre.ore.after { background: #654; }
+	pre.glass { color: #578; }
+	pre.glass.above { background: #9bd; }
+	pre.glass.ahead { background: #89a; }
+	pre.glass.after { background: #79b; }
 	ul {
 		list-style: none;
 		display: none;
@@ -69,7 +103,7 @@ export function setup () {
 		overflow-y: scroll;
 	}
 	li + li { margin-top: 15px; }
-	div {
+	.controls {
 		position: absolute;
 		top: 0;
 		width: 100%;
