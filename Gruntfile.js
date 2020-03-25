@@ -52,6 +52,7 @@ module.exports = function (grunt) {
 			'./src/flip.js',
 			'./src/inflate.js',
 			'./src/io.js',
+			'./src/locate-offset.js',
 			'./src/modify.js',
 			'./src/prepare-frame.js',
 			'./src/prepare-mask.js',

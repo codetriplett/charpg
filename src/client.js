@@ -6,14 +6,11 @@ import { resize } from './resize.js';
 import { modify } from './modify.js';
 import { select } from './select.js';
 import { rotate } from './rotate.js';
+import { locateOffset } from './locate-offset.js';
 
 export default function charpg () {
 	const length = 9;
 	const previewChunk = inflate([], length);
-	const div = document.createElement('div');
-	const previewPre = document.createElement('pre');
-	const leftPre = document.createElement('pre');
-	const rightPre = document.createElement('pre');
 	let chunkCoordinates = [0, 0, 0];
 	let rotation = 0;
 	let isRotated = false;
@@ -23,7 +20,24 @@ export default function charpg () {
 	let chunk;
 	let mask;
 
-	div.className = 'frame';
+	const divs = [
+		'',
+		'mask',
+		'before',
+		'after',
+		'behind before',
+		'behind',
+		'behind after'
+	].map(modifier => {
+		const div = document.createElement('div');
+	
+		div.className = `frame ${modifier}`;
+		document.body.appendChild(div);
+	
+		return div;
+	});
+
+	const [div, previewDiv, ...adjacents] = divs;
 
 	const {
 		counterButton,
@@ -36,12 +50,17 @@ export default function charpg () {
 	
 	let selectedType = typeSelect.value;
 
-	function locateCoordinates (change) {
+	function locateCoordinates (...changes) {
 		let [x, z, y] = chunkCoordinates;
 
-		if (change) {
-			switch (rotation) {
+		changes.forEach((change, i) => {
+			if (change === undefined) {
+				return;
+			}
+
+			switch (rotation + i) {
 				case 0:
+				case 4:
 					x += change;
 					break;
 				case 1:
@@ -54,7 +73,7 @@ export default function charpg () {
 					z += -change;
 					break;
 			}
-		}
+		});
 
 		return [x, z, y];
 	}
@@ -72,14 +91,16 @@ export default function charpg () {
 	}
 
 	function loadAdjacents () {
-		return Promise.all([
-			loadAndRotate(locateCoordinates(-1)).then(leftChunk => {
-				render(leftChunk, leftPre, true, isRotated);
-			}),
-			loadAndRotate(locateCoordinates(1)).then(rightChunk => {
-				render(rightChunk, rightPre, true, isRotated);
+		return Promise.all(
+			adjacents.map(div => {
+				const [x, z] = locateOffset(div);
+				const coordinates = locateCoordinates(x, z);
+
+				return loadAndRotate(coordinates).then(chunk => {
+					render(chunk, div, true, isRotated);
+				});
 			})
-		]);
+		);
 	}
 
 	function save () {
@@ -103,28 +124,20 @@ export default function charpg () {
 		io(...chunkCoordinates, correctedChunk)
 	}
 
-	function load (change) {
-		const coordinates = locateCoordinates(change);
+	function load (x, z) {
+		const coordinates = locateCoordinates(x, z);
 
-		return loadAndRotate(coordinates).then((adjacentChunk = []) => {
+		return loadAndRotate(coordinates).then((centerChunk = []) => {
 			chunkCoordinates = coordinates;
-			chunk = adjacentChunk;
+			chunk = centerChunk;
 			mask = render(chunk, div, false, isRotated);
-			render(inflate([]), previewPre, true, isRotated);
+			render(inflate([]), previewDiv, true, isRotated);
 
 			return loadAdjacents();
 		});
 	}
 
-	leftPre.style.opacity = 0.5;
-	rightPre.style.opacity = 0.5;
-	previewPre.style.opacity = 0.5;
-
-	document.body.appendChild(leftPre);
-	document.body.appendChild(rightPre);
-	document.body.appendChild(div);
-	document.body.appendChild(previewPre);
-	window.addEventListener('resize', () => resize(div, previewPre, leftPre, rightPre));
+	window.addEventListener('resize', () => resize(isRotated, ...divs));
 
 	function modifyChunk (block, onlyPreview) {
 		if (xPercent === undefined || yPercent === undefined) {
@@ -166,7 +179,7 @@ export default function charpg () {
 			modify(coordinates, previewChunk, selectedType);
 		}
 
-		render(previewChunk, previewPre, true, isRotated);
+		render(previewChunk, previewDiv, true, isRotated);
 		previousId = id;
 		
 		if (!onlyPreview) {
@@ -187,9 +200,11 @@ export default function charpg () {
 		isRotated = !isRotated;
 		mask = render(chunk, div, false, isRotated);
 		loadAdjacents();
+		resize(isRotated, ...divs);
+		document.body.classList[isRotated ? 'add' : 'remove']('flipped');
 	}
 
-	previewPre.addEventListener('mousemove', ({ offsetX, offsetY }) => {
+	previewDiv.addEventListener('mousemove', ({ offsetX, offsetY }) => {
 		const { clientWidth, clientHeight } = div;
 
 		xPercent = offsetX / clientWidth;
@@ -198,12 +213,12 @@ export default function charpg () {
 		modifyChunk(selectedType, true);
 	});
 	
-	previewPre.addEventListener('click', event => {
+	previewDiv.addEventListener('click', event => {
 		event.preventDefault();
 		modifyChunk(selectedType);
 	});
 
-	previewPre.addEventListener('contextmenu', event => {
+	previewDiv.addEventListener('contextmenu', event => {
 		event.preventDefault();
 		modifyChunk();
 	});
@@ -218,7 +233,37 @@ export default function charpg () {
 		selectedType = typeSelect.value;
 	});
 
-	load().then(() => resize(div, previewPre, leftPre, rightPre));
+	window.addEventListener('keydown', ({ key, repeat }) => {
+		if (repeat) {
+			return;
+		}
+
+		switch (key) {
+			case ' ':
+				save();
+				break;
+			case 'q':
+				rotateChunk(1);
+				break;
+			case 'e':
+				rotateChunk(-1);
+				break;
+			case 'a':
+				load(-1)
+				break;
+			case 'd':
+				load(1);
+				break;
+			case 'w':
+				load(0, -1);
+				break;
+			case 's':
+				load(0, 1);
+				break;
+		}
+	});
+
+	load().then(() => resize(isRotated, ...divs));
 };
 
 charpg();

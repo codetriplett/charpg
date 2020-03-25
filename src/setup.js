@@ -10,11 +10,11 @@ export function setup () {
 	const saveButton = document.createElement('button');
 	const typeSelect = document.createElement('select');
 
-	Object.assign(counterButton, { innerText: 'Rotate CCW', type: 'button' });
-	Object.assign(clockwiseButton, { innerText: 'Rotate CW', type: 'button' });
-	Object.assign(loadLeftButton, { innerText: 'Load Left', type: 'button' });
-	Object.assign(loadRightButton, { innerText: 'Load Right', type: 'button' });
-	Object.assign(saveButton, { innerText: 'Save', type: 'button', className: 'save' });
+	Object.assign(counterButton, { innerText: 'Rotate CCW (q)', type: 'button' });
+	Object.assign(clockwiseButton, { innerText: 'Rotate CW (e)', type: 'button' });
+	Object.assign(loadLeftButton, { innerText: 'Load Left (a)', type: 'button' });
+	Object.assign(loadRightButton, { innerText: 'Load Right (d)', type: 'button' });
+	Object.assign(saveButton, { innerText: 'Save (Space)', type: 'button' });
 	
 	buttons.className = 'controls';
 	buttons.appendChild(counterButton);
@@ -43,9 +43,10 @@ export function setup () {
 		padding: 0;
 		box-sizing: border-box;
 		font-family: monospace;
+		white-space: pre;
 	}
-	html, body { width: 100%; height: 100%; overflow: hidden; }
-	body > pre, body > .frame {
+	html, body { width: 100%; height: 100%; overflow: hidden; background: lightgray; }
+	body > pre, .frame {
 		position: absolute;
 		left: 50%;
 		top: 50%;
@@ -56,7 +57,28 @@ export function setup () {
 		-ms-user-select: none;
 		transform-origin: left top;
 	}
-	.frame pre { float: left; }
+	.frame { z-index: 4; }
+	.frame.mask { z-index: 6; }
+	.frame.before { z-index: 3; }
+	.frame.after { z-index: 5; }
+	.frame.behind { z-index: 1; }
+	.frame.behind.before { z-index: 0; }
+	.frame.behind.after { z-index: 2; }
+	.flipped .frame.before { z-index: 5; }
+	.flipped .frame.after { z-index: 3; }
+	.flipped .frame.behind.before { z-index: 2; }
+	.flipped .frame.behind.after { z-index: 0; }
+	.mask:after {
+		content: '';
+		width: 100%;
+		height: 100%;
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+	}
+	.frame pre { display: inline-block; color: #777; }
 	pre.dirt { color: #310; }
 	pre.dirt.above { background: #531; }
 	pre.dirt.ahead { background: #420; }
@@ -108,10 +130,11 @@ export function setup () {
 		top: 0;
 		width: 100%;
 		text-align: center;
+		white-space: normal;
 		z-index: 9;
 	}
 	button {
-		width: 21vh;
+		width: 25vh;
 		height: 6vh;
 		border: 1px solid black;
 		border-radius: 0.5vh;
@@ -121,7 +144,6 @@ export function setup () {
 		cursor: pointer;
 	}
 	button:hover { background: lightgray; }
-	button.save { width: 10vh; }
 	p {
 		position: absolute;
 		bottom: 0;
